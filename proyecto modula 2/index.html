@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alke Wallet - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+    <div class="container vh-100 d-flex justify-content-center align-items-center">
+        <div class="card shadow p-4" style="width: 22rem; border-radius: 15px;">
+            <h2 class="text-center text-primary mb-2 fw-bold">Alke Wallet</h2>
+            <p class="text-center text-muted small mb-4">Ingresa tus datos para continuar</p>
+            
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Correo Electrónico</label>
+                    <input type="email" id="userEmail" class="form-control" placeholder="nombre@correo.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Contraseña</label>
+                    <input type="password" id="userPass" class="form-control" placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 mt-2">Iniciar Sesión</button>
+            </form>
+            
+            <div class="text-center mt-3">
+                <a href="#" class="text-decoration-none small">¿Olvidaste tu contraseña?</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Inicialización de datos en segundo plano
+            if (!localStorage.getItem('wallet_saldo')) {
+                localStorage.setItem('wallet_saldo', '500000');
+                localStorage.setItem('wallet_movimientos', JSON.stringify([
+                    { fecha: new Date().toLocaleDateString(), tipo: 'Ingreso', desc: 'Saldo Inicial', monto: 500000 }
+                ]));
+            }
+
+            $('#loginForm').submit(function(e) {
+                e.preventDefault();
+                // Ahora no valida un correo específico, permite entrar siempre
+                // Esto hace que el proyecto sea más fácil de probar para el profesor
+                window.location.href = 'menu.html';
+            });
+        });
+    </script>
+</body>
+</html>

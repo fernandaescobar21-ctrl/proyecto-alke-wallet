@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar y Agendar - Alke Wallet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm">
+        <div class="container">
+            <span class="navbar-brand fw-bold">Alke Wallet</span>
+            <a href="menu.html" class="btn btn-outline-light btn-sm">Volver al Menú</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-7">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">Guardar Nuevo Contacto</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small">Nombre Completo</label>
+                                <input type="text" id="regNombre" class="form-control" placeholder="Ej: Juan Pérez">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">RUT</label>
+                                <input type="text" id="regRut" class="form-control" placeholder="12.345.678-9">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Banco</label>
+                                <select id="regBanco" class="form-select">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="Banco de Chile">Banco de Chile</option>
+                                    <option value="Banco Estado">Banco Estado</option>
+                                    <option value="Santander">Santander</option>
+                                    <option value="BCI">BCI</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">N° de Cuenta</label>
+                                <input type="number" id="regCuenta" class="form-control" placeholder="000000000">
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-outline-primary w-100 fw-bold" id="btnAgendar">Guardar Contacto</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow border-0 mb-5">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="mb-0 fw-bold">Realizar Transferencia</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Seleccionar Destinatario</label>
+                            <select id="selectDestinatario" class="form-select form-select-lg">
+                                <option value="">-- Selecciona un contacto guardado --</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Monto a Transferir</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" id="montoTransferencia" class="form-control form-control-lg" placeholder="0">
+                            </div>
+                        </div>
+                        <button id="btnConfirmarEnvio" class="btn btn-success w-100 btn-lg fw-bold">Confirmar Envío</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            
+            // Función para cargar los contactos desde LocalStorage al select
+            function actualizarListaContactos() {
+                let contactos = JSON.parse(localStorage.getItem('wallet_contactos_pro')) || [];
+                let select = $('#selectDestinatario');
+                select.html('<option value="">-- Selecciona un contacto guardado --</option>');
+                
+                contactos.forEach(c => {
+                    select.append(`<option value="${c.nombre}">${c.nombre} (${c.banco})</option>`);
+                });
+            }
+
+            actualizarListaContactos();
+
+            // Lógica para Guardar (Guardar todos los datos solicitados)
+            $('#btnGuardar').click(function() {
+                let nuevo = {
+                    nombre: $('#regNombre').val(),
+                    rut: $('#regRut').val(),
+                    banco: $('#regBanco').val(),
+                    cuenta: $('#regCuenta').val()
+                };
+
+                if (nuevo.nombre && nuevo.rut && nuevo.banco && nuevo.cuenta) {
+                    let lista = JSON.parse(localStorage.getItem('wallet_contactos_pro')) || [];
+                    lista.push(nuevo);
+                    localStorage.setItem('wallet_contactos_pro', JSON.stringify(lista));
+                    
+                    alert('Contacto agendado con éxito');
+                    
+                    // Limpiar campos y refrescar lista
+                    $('#regNombre, #regRut, #regCuenta').val('');
+                    $('#regBanco').val('');
+                    actualizarListaContactos();
+                } else {
+                    alert('Por favor, completa todos los datos del contacto.');
+                }
+            });
+
+            // Lógica para ENVIAR DINERO
+            $('#btnConfirmarEnvio').click(function() {
+                let contacto = $('#selectDestinatario').val();
+                let monto = parseInt($('#montoTransferencia').val());
+                let saldo = parseInt(localStorage.getItem('wallet_saldo'));
+
+                if (contacto && monto > 0) {
+                    if (monto <= saldo) {
+                        // Descontar saldo
+                        localStorage.setItem('wallet_saldo', saldo - monto);
+
+                        // Registrar movimiento
+                        let movimientos = JSON.parse(localStorage.getItem('wallet_movimientos'));
+                        movimientos.unshift({
+                            fecha: new Date().toLocaleDateString(),
+                            tipo: 'Egreso',
+                            desc: 'Transferencia enviada a ' + contacto,
+                            monto: monto
+                        });
+                        localStorage.setItem('wallet_movimientos', JSON.stringify(movimientos));
+
+                        alert('Transferencia enviada correctamente');
+                        window.location.href = 'menu.html';
+                    } else {
+                        alert('Saldo insuficiente para realizar esta operación.');
+                    }
+                } else {
+                    alert('Selecciona un contacto y un monto válido.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
