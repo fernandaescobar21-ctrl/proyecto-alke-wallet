@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Movimientos - Alke Wallet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-primary">Movimientos Actuales</h2>
+            <a href="menu.html" class="btn btn-outline-secondary">Volver al Inicio</a>
+        </div>
+        
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Descripción</th>
+                            <th>Tipo</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaTransacciones">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let movimientos = JSON.parse(localStorage.getItem('wallet_movimientos')) || [];
+            let tabla = $('#listaTransacciones');
+
+            if (movimientos.length === 0) {
+                tabla.append('<tr><td colspan="4" class="text-center text-muted">No hay movimientos registrados</td></tr>');
+            }
+
+            movimientos.forEach(m => {
+                let badgeClass = m.tipo === 'Ingreso' ? 'bg-success' : 'bg-danger';
+                let montoColor = m.tipo === 'Ingreso' ? 'text-success' : 'text-danger';
+                let simbolo = m.tipo === 'Ingreso' ? '+' : '-';
+
+                tabla.append(`
+                    <tr class="align-middle">
+                        <td>${m.fecha}</td>
+                        <td>${m.desc}</td>
+                        <td><span class="badge ${badgeClass}">${m.tipo}</span></td>
+                        <td class="fw-bold ${montoColor}">${simbolo}$${m.monto.toLocaleString()}</td>
+                    </tr>
+                `);
+            });
+        });
+    </script>
+</body>
+</html>
